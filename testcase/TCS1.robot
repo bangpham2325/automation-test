@@ -8,10 +8,21 @@ ${url}  https://demo.nopcommerce.com/
 ${brower}   chrome
 
 *** Test Cases ***
-LoginTest1
+LoginTest(OL-T1234)
    Pass Execution    123
 
-LoginTest2
+LoginTest2(OL-T1238)
+   Pass Execution    123
+
+
+LoginTest3(OL-T12349)
+   Pass Execution    123
+
+
+LoginTest4(OL-T12310)
+   Pass Execution    123
+LoginTest5(OL-T123120)
+
    Pass Execution    123
 
 *** Keywords ***
