@@ -34,7 +34,7 @@ LoginTest6(OL-T1231)
 LoginTest6(OL-T12316)
    Pass Execution    123
 LoginTest6(OL-T12316)
-   Pass Execution    125
+   Pass Execution    12
 *** Keywords ***
 LoginInputText
    click link   xpath://a[contains(text(),'Log in')]
