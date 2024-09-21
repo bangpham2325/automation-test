@@ -8,13 +8,9 @@ ${url}  https://demo.nopcommerce.com/
 ${brower}   chrome
 
 *** Test Cases ***
-LoginTest1
+LoginTest (OL-T123)
    Pass Execution    123
 
-LoginTest2
-   Pass Execution    123
-LoginTest3
-   Pass Execution    1235
 *** Keywords ***
 LoginInputText
    click link   xpath://a[contains(text(),'Log in')]
