@@ -14,7 +14,7 @@ LoginTest1
 LoginTest2
    Pass Execution    123
 LoginTest3
-   Pass Execution    123
+   Pass Execution    1235
 *** Keywords ***
 LoginInputText
    click link   xpath://a[contains(text(),'Log in')]
