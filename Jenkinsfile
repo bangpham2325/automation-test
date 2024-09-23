@@ -90,18 +90,20 @@ pipeline {
         success {
             script {
                 def passPercentage = env.PASS_PERCENTAGE?.toDouble() ?: 0.0
+                def jobUrl = "${BUILD_URL}"
                 if (passPercentage > 90.0) {
                     echo 'Pass percentage is greater than 90%, allowing merge...'
-                    githubNotify account: "${env.account}", context: 'Jenkins', credentialsId: "${env.credentialsId}", description: 'Pass percentage is greater than 90%, allowing merge. See job details: ${BUILD_URL}', gitApiUrl: '', repo: 'automation-test', sha: "${env.GIT_COMMIT}", status: 'SUCCESS', targetUrl: "${env.GITHUB_API_URL}"
+                    githubNotify account: "${env.account}", context: 'Jenkins', credentialsId: "${env.credentialsId}", description: 'Pass percentage is greater than 90%, allowing merge. See job details: ${jobUrl}', gitApiUrl: '', repo: 'automation-test', sha: "${env.GIT_COMMIT}", status: 'SUCCESS', targetUrl: "${env.GITHUB_API_URL}"
                 } else {
                     echo 'Pass percentage is less than or equal to 90%, not allowing merge.'
-                    githubNotify account: "${env.account}", context: 'Jenkins', credentialsId: "${env.credentialsId}", description: 'Pass percentage is less than or equal to 90%, not allowing merge. See job details: ${BUILD_URL}', gitApiUrl: '', repo: 'automation-test', sha: "${env.GIT_COMMIT}", status: 'FAILURE', targetUrl: "${env.GITHUB_API_URL}"
+                    githubNotify account: "${env.account}", context: 'Jenkins', credentialsId: "${env.credentialsId}", description: 'Pass percentage is less than or equal to 90%, not allowing merge. See job details: ${jobUrl}', gitApiUrl: '', repo: 'automation-test', sha: "${env.GIT_COMMIT}", status: 'FAILURE', targetUrl: "${env.GITHUB_API_URL}"
                 }
             }
         }
         failure {
+            def jobUrl = "${BUILD_URL}"
             echo 'Some relevant tests failed, PR cannot be merged.'
-            githubNotify account: "${env.account}", context: 'Jenkins', credentialsId: "${env.credentialsId}", description: 'Some relevant tests failed, PR cannot be merged. See job details: ${BUILD_URL}', gitApiUrl: '', repo: 'automation-test', status: 'FAILURE',sha: "${env.GIT_COMMIT}", targetUrl: "${env.GITHUB_API_URL}"
+            githubNotify account: "${env.account}", context: 'Jenkins', credentialsId: "${env.credentialsId}", description: 'Some relevant tests failed, PR cannot be merged. See job details: ${jobUrl}', gitApiUrl: '', repo: 'automation-test', status: 'FAILURE',sha: "${env.GIT_COMMIT}", targetUrl: "${env.GITHUB_API_URL}"
         }
     }
 }
