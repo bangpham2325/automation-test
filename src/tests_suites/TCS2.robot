@@ -13,6 +13,14 @@ LoginTest (OL-T2123)
 
 LoginTest (OL-T3123)
    Pass Execution    123
+
+LoginTest (OL-T3125)
+   Pass Execution    123
+
+LoginTest (OL-T3125)
+   Sleep    100s
+   Pass Execution    123
+
 *** Keywords ***
 LoginInputText
    click link   xpath://a[contains(text(),'Log in')]
