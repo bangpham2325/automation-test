@@ -8,12 +8,19 @@ pipeline {
         // Define the python_path dynamically based on the job name and environment
         python_path = "/var/lib/jenkins/workspace/"
         GITHUB_API_URL='https://github.com/bangpham2325/automation-test.git'
+        credentialsId='123123'
+        account='bangpham2325'
     }
     stages {
 
         stage('Checkout Code') {
             steps {
                 checkout scm
+                script {
+                    // Get the latest commit SHA and save it in an environment variable
+                    env.GIT_COMMIT = sh(script: "git rev-parse HEAD", returnStdout: true).trim()
+                    echo "Latest commit SHA: ${env.GIT_COMMIT}"
+                }
             }
         }
         stage('Run Shell Script') {
@@ -85,30 +92,16 @@ pipeline {
                 def passPercentage = env.PASS_PERCENTAGE?.toDouble() ?: 0.0
                 if (passPercentage > 90.0) {
                     echo 'Pass percentage is greater than 90%, allowing merge...'
-                    withCredentials([usernamePassword(credentialsId: '123123', usernameVariable: 'bangne', passwordVariable: 'AQAAABAAAAAwHhBlsULo76LBd0BKTcU3Q/GqfPiX9bPd2U+74PblK550+YNQ5aSFrw+PHaG/B2nHF8WsVGEJds8rhQp057TlmQ==')]) { githubToken ->
-                        sh """
-                            curl -X POST -H "Authorization: token ${githubToken}" \
-                            -d '{"state": "success", "context": "Jenkins", "description": "Pass percentage > 90%", "target_url": "${env.BUILD_URL}"}' \
-                            https://api.github.com/repos/bangpham2325/automation-test/statuses/${env.GIT_COMMIT}
-                        """
-                    }
+                    githubNotify account: "${env.account}", context: 'Jenkins', credentialsId: "${env.credentialsId}", description: 'Pass percentage is greater than 90%, allowing merge.', gitApiUrl: '', repo: 'automation-test', sha: "${env.GIT_COMMIT}", status: 'SUCCESS', targetUrl: "${env.GITHUB_API_URL}"
                 } else {
                     echo 'Pass percentage is less than or equal to 90%, not allowing merge.'
-                    currentBuild.result = 'FAILURE'
-                    githubNotify account: 'bangpham2325', context: 'Jenkins', credentialsId: '123123', description: 'PAss roi ne', gitApiUrl: '', repo: 'automation-test', sha: '5132500809d92fae3ba9fe2de92e8ef1763e8f08', status: 'FAILURE', targetUrl: "${env.GITHUB_API_URL}"
-//                     withCredentials([usernamePassword(credentialsId: '123123', usernameVariable: 'bangne', passwordVariable: 'AQAAABAAAAAwHhBlsULo76LBd0BKTcU3Q/GqfPiX9bPd2U+74PblK550+YNQ5aSFrw+PHaG/B2nHF8WsVGEJds8rhQp057TlmQ==')]) { githubToken ->
-//                         sh """
-//                             curl -X POST -H "Authorization: token ${githubToken}" \
-//                             -d '{"state": "success", "context": "Jenkins", "description": "Pass percentage > 90%", "target_url": "${env.BUILD_URL}"}' \
-//                             https://api.github.com/repos/bangpham2325/automation-test/statuses/${env.GIT_COMMIT}
-//                         """
-//                     }
+                    githubNotify account: "${env.account}", context: 'Jenkins', credentialsId: "${env.credentialsId}", description: 'Pass percentage is less than or equal to 90%, not allowing merge.', gitApiUrl: '', repo: 'automation-test', sha: "${env.GIT_COMMIT}", status: 'FAILURE', targetUrl: "${env.GITHUB_API_URL}"
                 }
             }
         }
         failure {
             echo 'Some relevant tests failed, PR cannot be merged.'
-            githubNotify account: 'bangpham2325', context: 'Jenkins', credentialsId: '123123', description: 'PAss roi ne', gitApiUrl: '', repo: 'automation-test', status: 'SUCCESS',sha: '5132500809d92fae3ba9fe2de92e8ef1763e8f08', targetUrl: "${env.GITHUB_API_URL}"
+            githubNotify account: "${env.account}", context: 'Jenkins', credentialsId: "${env.credentialsId}", description: 'Some relevant tests failed, PR cannot be merged.', gitApiUrl: '', repo: 'automation-test', status: 'FAILURE',sha: "${env.GIT_COMMIT}", targetUrl: "${env.GITHUB_API_URL}"
         }
     }
 }
