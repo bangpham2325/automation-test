@@ -11,6 +11,12 @@ ${brower}   chrome
 LoginTest (OL-T123)
    Pass Execution    123
 
+LoginTest (OL-T1235, OL-T1236)
+   Pass Execution    123
+
+LoginTest (OL-T1237,OL-T1238)
+   Pass Execution    123
+   # tcs (OL-T1238)
 *** Keywords ***
 LoginInputText
    click link   xpath://a[contains(text(),'Log in')]
