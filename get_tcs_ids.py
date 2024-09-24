@@ -34,6 +34,8 @@ log_file_name = "new_tcs.log"
 
 # Open the log file for writing
 with open(log_file_name, "w") as log_file:
+    if len(new_tcs_ids) == 0:
+        log_file.write("")
     for item in new_tcs_ids:
         # Replace spaces with asterisks and format the string
         formatted_item = item.replace(" ", "*")
