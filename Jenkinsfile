@@ -2,14 +2,31 @@ pipeline {
     agent any
 
     parameters {
-        string(name: 'INSTANCE', defaultValue: 'LTS_STG', description: 'Instance name to be used for testing')
+        string(
+            name: 'INSTANCE',
+            defaultValue: 'LTS_STG',
+            description: 'Instance name to be used for testing'
+        )
+        string(
+            name: 'ACCOUNT_NAME',
+            defaultValue: 'bangpham2325',
+            description: 'GitHub account that owns the repos that contains the commit to notify'
+        )
+        string(
+            name: 'GITHUB_API_URL',
+            defaultValue: 'https://github.com/bangpham2325/automation-test.git'
+        )
+        credentials(
+            name: 'CREDENTIALS_ID',
+            description: 'The GitHub credentials, username/password or username/accessToken'
+        )
     }
     environment {
         // Define the python_path dynamically based on the job name and environment
         python_path = "/var/lib/jenkins/workspace/"
-        GITHUB_API_URL='https://github.com/bangpham2325/automation-test.git'
-        credentialsId='123123'
-        account='bangpham2325'
+        GITHUB_API_URL="${params.GITHUB_API_URL}"
+        credentialsId = "${params.CREDENTIALS_ID}"
+        account="${params.ACCOUNT_NAME}"
     }
     stages {
 
