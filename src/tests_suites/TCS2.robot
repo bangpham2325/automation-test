@@ -20,13 +20,8 @@ LoginTest (OL-T3125)
 LoginTest (OL-T3125)
    Sleep    100s
    Pass Execution    123
-
-LoginTest (OL-T31251)
-   Sleep    100s
-   Pass Execution    123
-
-LoginTest (OL-T31253)
-   Sleep    100s
+LoginTest (OL-T3125)
+   Sleep    200s
    Pass Execution    123
 
 *** Keywords ***
