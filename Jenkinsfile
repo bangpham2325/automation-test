@@ -50,23 +50,41 @@ pipeline {
                 script {
                     // Activate the Python virtual environment and run commands
                     def instance = params.INSTANCE
-                    sh '''
-                        set +e
-                        # Activate the virtual environment
-                        . venv/bin/activate
-                        pip install GitPython
-                        # You can now run Python commands or scripts here
-                        python --version
-                        python get_tcs_ids.py
-                        python_path="/var/lib/jenkins/workspace/"$JOB_NAME$ENV
-                        export PYTHONPATH=$python_path
-                        pabot --pabotlib --pabotlibport 2999 --testlevelsplit --processes 5 -d results -o output.xml --variable env:${INSTANCE} -i ${INSTANCE} -e skip --tagstatinclude ${INSTANCE} $(cat new_tcs.log | tr '\n' ' ') src/tests_suites
-                        echo "hello"
-                        pabot --pabotlib --testlevelsplit --processes 5 --rerunfailed results/output.xml --outputdir results --output rerun.xml --variable env:${INSTANCE} -i ${INSTANCE} -e skip --tagstatinclude ${INSTANCE} src/tests_suites
-                        cd results
-                        rebot --merge --output output.xml --tagstatinclude ${INSTANCE} -l log.html -r report.html output.xml rerun.xml
-                        set -e
-                    '''
+                    def result = sh(
+                        script: '''
+                            set +e
+                            # Activate the virtual environment
+                            . venv/bin/activate
+                            pip install GitPython
+                            # You can now run Python commands or scripts here
+                            python --version
+                            python get_tcs_ids.py
+                            python_path="/var/lib/jenkins/workspace/"$JOB_NAME$ENV
+                            export PYTHONPATH=$python_path
+                            # Check if new_tcs.log has data
+                            if [ -s new_tcs.log ]; then
+                                echo "new_tcs.log has data, proceeding with tests..."
+                                pabot --pabotlib --pabotlibport 2999 --testlevelsplit --processes 5 -d results -o output.xml --variable env:${INSTANCE} -i ${INSTANCE} -e skip --tagstatinclude ${INSTANCE} $(cat new_tcs.log | tr '\n' ' ') src/tests_suites
+                                echo "hello"
+                                pabot --pabotlib --testlevelsplit --processes 5 --rerunfailed results/output.xml --outputdir results --output rerun.xml --variable env:${INSTANCE} -i ${INSTANCE} -e skip --tagstatinclude ${INSTANCE} src/tests_suites
+                                cd results
+                                rebot --merge --output output.xml --tagstatinclude ${INSTANCE} -l log.html -r report.html output.xml rerun.xml
+                                exit 0
+                            else
+                                echo "new_tcs.log is empty, skipping tests."
+                                exit 1
+                            fi
+                            set -e
+                        ''', returnStatus: true
+                    )
+
+                    if (result == 1) {
+                        env.LIST_TCS = 'False'
+                        echo "LIST_TCS is set to False"
+                    } else {
+                        env.LIST_TCS = 'True'
+                        echo "LIST_TCS is set to True"
+                    }
                 }
             }
         }
@@ -74,6 +92,11 @@ pipeline {
         stage('Calculate Pass Percentage') {
             steps {
                 script {
+                    if (env.LIST_TCS == 'False') {
+                        echo 'Skipping pass percentage calculation as there are no tests to run.'
+                        env.PASS_PERCENTAGE = 100
+                        return
+                    }
                     def pythonScriptPath = 'calculate_pass_percentage.py'
                         // Run Python script and capture the output (pass percentage)
                     def passPercentage = sh(script: "python3 ${pythonScriptPath}", returnStdout: true).trim()
