@@ -1,33 +1,13 @@
 pipeline {
     agent any
 
-    parameters {
-        string(
-            name: 'INSTANCE',
-            defaultValue: 'LTS_STG',
-            description: 'Instance name to be used for testing'
-        )
-        string(
-            name: 'ACCOUNT_NAME',
-            defaultValue: 'bangpham2325',
-            description: 'GitHub account that owns the repos that contains the commit to notify'
-        )
-        string(
-            name: 'GITHUB_API_URL',
-            defaultValue: 'https://github.com/bangpham2325/automation-test.git'
-        )
-        credentials(
-            name: 'CREDENTIALS_ID',
-            defaultValue: '123123',
-            description: 'The GitHub credentials, username/password or username/accessToken'
-        )
-    }
     environment {
         // Define the python_path dynamically based on the job name and environment
         python_path = "/var/lib/jenkins/workspace/"
-        GITHUB_API_URL="${params.GITHUB_API_URL}"
-        credentialsId = "${params.CREDENTIALS_ID}"
-        account="${params.ACCOUNT_NAME}"
+        GITHUB_API_URL="https://github.com/bangpham2325/automation-test.git"
+        credentialsId = "123123"
+        account="bangpham2325"
+        instance = "LTS_STG"
     }
     stages {
 
@@ -82,11 +62,11 @@ pipeline {
                             # Check if new_tcs.log has data
                             if [ -s new_tcs.log ]; then
                                 echo "new_tcs.log has data, proceeding with tests..."
-                                pabot --pabotlib --pabotlibport 2999 --testlevelsplit --processes 5 -d results -o output.xml --variable env:${INSTANCE} -i ${INSTANCE} -e skip --tagstatinclude ${INSTANCE} $(cat new_tcs.log | tr '\n' ' ') src/tests_suites
+                                pabot --pabotlib --pabotlibport 2999 --testlevelsplit --processes 5 -d results -o output.xml --variable env:${instance} -i ${instance} -e skip --tagstatinclude ${instance} $(cat new_tcs.log | tr '\n' ' ') src/tests_suites
                                 echo "hello"
-                                pabot --pabotlib --testlevelsplit --processes 5 --rerunfailed results/output.xml --outputdir results --output rerun.xml --variable env:${INSTANCE} -i ${INSTANCE} -e skip --tagstatinclude ${INSTANCE} src/tests_suites
+                                pabot --pabotlib --testlevelsplit --processes 5 --rerunfailed results/output.xml --outputdir results --output rerun.xml --variable env:${instance} -i ${instance} -e skip --tagstatinclude ${instance} src/tests_suites
                                 cd results
-                                rebot --merge --output output.xml --tagstatinclude ${INSTANCE} -l log.html -r report.html output.xml rerun.xml
+                                rebot --merge --output output.xml --tagstatinclude ${instance} -l log.html -r report.html output.xml rerun.xml
                                 exit 0
                             else
                                 echo "new_tcs.log is empty, skipping tests."
