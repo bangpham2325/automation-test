@@ -18,6 +18,7 @@ pipeline {
         )
         credentials(
             name: 'CREDENTIALS_ID',
+            defaultValue: '123123',
             description: 'The GitHub credentials, username/password or username/accessToken'
         )
     }
