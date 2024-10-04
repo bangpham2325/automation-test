@@ -24,9 +24,12 @@ LoginTest (OL-T3125)
 LoginTest (OL-T312225)
    Pass Execution    123
    Pass Execution    123
-LoginTest (OL-T312225)
+LoginTest (OL-T3122253)
    Pass Execution    123
-   Pass Execution    1234
+   Pass Execution    123445
+LoginTest (OL-T3122252)
+   Pass Execution    123
+   Pass Execution    123445
 *** Keywords ***
 LoginInputText
    click link   xpath://a[contains(text(),'Log in')]
