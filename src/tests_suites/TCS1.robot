@@ -16,7 +16,8 @@ LoginTest (OL-T1235, OL-T1236)
 
 LoginTest (OL-T1237,OL-T1238)
    Pass Execution    123
-   # tcs (OL-T1238)
+LoginTest (OL-T1237,OL-T12328)
+   Pass Execution    1232
 *** Keywords ***
 LoginInputText
    click link   xpath://a[contains(text(),'Log in')]
