@@ -21,10 +21,6 @@ LoginTest (OL-T3125)
    Pass Execution    123
 LoginTest (OL-T3125)
    Pass Execution    123
-
-LoginTest (OL-T31252323)
-   Pass Execution    123
-LoginTest (OL-T312252323)
    Pass Execution    123
 *** Keywords ***
 LoginInputText
