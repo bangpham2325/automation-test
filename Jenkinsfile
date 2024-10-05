@@ -31,6 +31,7 @@ pipeline {
                     } else {
                         echo "Branch ${branchName} does not start with 'implement/'. This PR does not require further testing."
                         currentBuild.result = 'SUCCESS'  // Set the build result as SUCCESS
+                        error("Stopping the job as the branch does not start with 'implement/'.")  // Stop the job
                     }
                 }
             }
@@ -149,7 +150,7 @@ pipeline {
         }
         failure {
             echo 'Some relevant tests failed, PR cannot be merged.'
-            githubNotify account: "${env.account}", context: 'Jenkins', credentialsId: "${env.credentialsId}", description: "Some relevant tests failed, PR cannot be merged.", gitApiUrl: '', repo: 'automation-test', status: 'FAILURE',sha: "${env.GIT_COMMIT}", targetUrl: "${env.BUILD_URL}"
+            githubNotify account: "${env.account}", context: 'Jenkins', credentialsId: "${env.credentialsId}", description: "the job as the branch does not start with 'implement/'", gitApiUrl: '', repo: 'automation-test', status: 'FAILURE', sha: "${env.GIT_COMMIT}", targetUrl: "${env.BUILD_URL}"
         }
     }
 }

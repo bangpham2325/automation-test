@@ -1,44 +1,103 @@
 import re
 from git import Repo
 
-repo = Repo('.')
-diff_files = [item.a_path for item in repo.head.commit.diff('HEAD~1')]
+# Regex pattern to find test cases IDs
+TEST_CASE_PATTERN = r'\(OL-T\d+(?:,\s*OL-T\d+)*\)'
 
-new_tcs_ids = []
+def extract_tags_from_line(line):
+    """Extract tags from a line that starts with 'Default Tags'."""
+    tags = re.findall(r'\b\w+\b', line[len("Default Tags"):])
+    tags = [tag.upper() for tag in tags if tag.lower() != 'regression']
+    return tags
 
-regex_pattern = r'\(OL-T\d+(?:,\s*OL-T\d+)*\)'
-for file in diff_files:
-    if file.endswith('.robot'):
-        # Get the content of the file in the current commit
-        with open(file, 'r') as f:
-            current_content = f.read()
-            current_ids = set(re.findall(regex_pattern, current_content))
+def get_default_tags(file_path):
+    """Extract default tags from a given file."""
+    try:
+        with open(file_path, 'r') as file:
+            for line in file:
+                if line.strip().startswith("Default Tags"):
+                    tags = extract_tags_from_line(line)
+                    if len(tags) == 1:
+                        return tags[0]
+                    elif 'TEST' in tags:
+                        return 'TEST'
+    except FileNotFoundError:
+        print(f"File not found: {file_path}")
+    except IOError:
+        print(f"Error reading file: {file_path}")
+    return 'TEST'
 
-        # Get the content of the file in the previous commit
-        previous_commit = repo.head.commit.parents[0]
-        try:
-            previous_content = previous_commit.tree[file].data_stream.read().decode('utf-8')
-            previous_ids = set(re.findall(regex_pattern, previous_content))
-        except KeyError:
-            # If the file does not exist in the previous commit
-            previous_ids = set()
 
-        # Get the new test cases by subtracting the old ones from the current ones
-        if len(previous_ids) != 0:
-            new_ids = current_ids - previous_ids
-            new_tcs_ids.extend(new_ids)
+def get_new_test_case_ids(previous_commit, diff_files):
+    """
+    Get the IDs of new test cases added in the commit by comparing
+    current and previous version of test files.
+    """
+    new_test_case_ids = set()
+    updated_test_file = ''
 
-# Remove duplicates and print the new test cases
-new_tcs_ids = set(new_tcs_ids)
-log_file_name = "new_tcs.log"
+    for file_path in diff_files:
+        if file_path.endswith('.robot') and file_path.startswith('src/tests_suites'):
+            current_test_ids = extract_test_case_ids(file_path)
+            previous_test_ids = extract_test_case_ids_from_commit(previous_commit, file_path)
 
-# Open the log file for writing
-with open(log_file_name, "w") as log_file:
-    if len(new_tcs_ids) == 0:
-        log_file.write("")
-    for item in new_tcs_ids:
-        # Replace spaces with asterisks and format the string
-        formatted_item = item.replace(" ", "*")
-        log_entry = f"-t *{formatted_item}\n"
-        # Write to the log file
-        log_file.write(log_entry)
+            new_ids = current_test_ids - previous_test_ids
+            if new_ids:
+                updated_test_file = file_path
+                new_test_case_ids.update(new_ids)
+
+    # Log new test case IDs
+    log_new_test_cases(new_test_case_ids)
+
+    return updated_test_file
+
+
+def extract_test_case_ids(file_path):
+    """Extract test case IDs from the file content using the regex pattern."""
+    try:
+        with open(file_path, 'r') as file:
+            content = file.read()
+            return set(re.findall(TEST_CASE_PATTERN, content))
+    except FileNotFoundError:
+        print(f"File not found: {file_path}")
+        return set()
+
+
+def extract_test_case_ids_from_commit(commit, file_path):
+    """Extract test case IDs from a file in a previous commit."""
+    try:
+        previous_content = commit.tree[file_path].data_stream.read().decode('utf-8')
+        return set(re.findall(TEST_CASE_PATTERN, previous_content))
+    except KeyError:
+        # File does not exist in the previous commit
+        return set()
+
+
+def log_new_test_cases(test_case_ids):
+    """Log the new test case IDs into a log file."""
+    log_file_name = "new_tcs.log"
+    with open(log_file_name, "w") as log_file:
+        if not test_case_ids:
+            log_file.write("")
+        for test_case_id in test_case_ids:
+            formatted_id = test_case_id.replace(" ", "*")
+            log_file.write(f"-t *{formatted_id}\n")
+
+
+if __name__ == "__main__":
+    repo = Repo('.')
+    previous_commit = repo.head.commit.parents[0]
+    diff_files = [item.a_path for item in repo.head.commit.diff('HEAD~1')]
+
+    # Get the file name with new test cases
+    updated_test_file = get_new_test_case_ids(previous_commit, diff_files)
+
+    # Get the default tags from the updated file
+    tag = get_default_tags(updated_test_file)
+
+    # Write the tag to the tag file
+    tag_file_path = "tag.txt"
+    with open(tag_file_path, "w") as tag_file:
+        tag_file.write(tag)
+
+    print(f"Tag extracted: {tag}")
