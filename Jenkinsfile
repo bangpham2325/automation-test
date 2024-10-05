@@ -10,7 +10,31 @@ pipeline {
         instance = "LTS_STG"
     }
     stages {
+        stage('Checkout PR') {
+            steps {
+                script {
+                    // Fetch the pull request
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: "pr/${ghprbPullId}/head"]],
+                        doGenerateSubmoduleConfigurations: false,
+                        extensions: [],
+                        userRemoteConfigs: [[url: "${env.GITHUB_API_URL}"]]
+                    ])
 
+                    // Get branch name
+                    def branchName = "${ghprbSourceBranch}"
+                    echo "Branch name: ${branchName}"
+                    // Check if the branch starts with 'implement/'
+                    if (branchName.contains("implement/")) {
+                        echo "Branch ${branchName} starts with 'implement/'. Proceeding with the build."
+                    } else {
+                        echo "Branch ${branchName} does not start with 'implement/'. This PR does not require further testing."
+                        currentBuild.result = 'SUCCESS'  // Set the build result as SUCCESS
+                    }
+                }
+            }
+        }
         stage('Checkout Code') {
             steps {
                 checkout scm
