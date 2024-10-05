@@ -13,7 +13,9 @@ LoginTest (OL-T123)
 
 LoginTest (OL-T1235, OL-T1236)
    Pass Execution    123
-
+LoginTest (OL-T1237,OL-T12338)
+   Pass Execution    123
+   Sleep    10s
 LoginTest (OL-T1237,OL-T1238)
    Pass Execution    123
    # tcs (OL-T1238)
