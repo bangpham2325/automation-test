@@ -86,12 +86,16 @@ pipeline {
                             export PYTHONPATH=$python_path
                             # Check if new_tcs.log has data
                             if [ -s new_tcs.log ]; then
+                                results_dir="results_${BUILD_NUMBER}"
+                                mkdir -p ${results_dir}
                                 echo "new_tcs.log has data, proceeding with tests..."
-                                pabot --pabotlib --pabotlibport 2999 --testlevelsplit --processes 5 -d results -o output.xml --variable env:${instance} -i ${instance} -e skip --tagstatinclude ${instance} $(cat new_tcs.log | tr '\n' ' ') src/tests_suites
+                                pabot --pabotlib --testlevelsplit --processes 5 -d ${results_dir} -o output.xml --variable env:${instance} -i ${instance} -e skip --tagstatinclude ${instance} $(cat new_tcs.log | tr '\n' ' ') src/tests_suites
                                 echo "hello"
-                                pabot --pabotlib --testlevelsplit --processes 5 --rerunfailed results/output.xml --outputdir results --output rerun.xml --variable env:${instance} -i ${instance} -e skip --tagstatinclude ${instance} src/tests_suites
-                                cd results
+                                pabot --pabotlib --testlevelsplit --processes 5 --rerunfailed ${results_dir}/output.xml --outputdir ${results_dir} --output rerun.xml --variable env:${instance} -i ${instance} -e skip --tagstatinclude ${instance} src/tests_suites
+
+                                cd ${results_dir}
                                 rebot --merge --output output.xml --tagstatinclude ${instance} -l log.html -r report.html output.xml rerun.xml
+                                exit 0
                                 exit 0
                             else
                                 echo "new_tcs.log is empty, skipping tests."
